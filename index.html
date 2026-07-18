@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jaxson's Maths Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+       
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a2e, #1a0033);
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            overflow: hidden;
+            height: 100dvh;
+            touch-action: manipulation;
+        }
+
+        h1 { 
+            font-size: 2em; 
+            color: #ffff00; 
+            text-shadow: 0 0 20px #ff00ff;
+            margin: 12px 0 8px;
+        }
+       
+        .game-area {
+            background: rgba(0,0,0,0.95);
+            border: 6px solid #00ff00;
+            border-radius: 16px;
+            padding: 20px 15px;
+            max-width: 94%;
+            margin: 12px auto;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+        }
+
+        .avatar { 
+            font-size: 4.8em; 
+            margin: 8px 0 12px; 
+            transition: all 0.4s; 
+        }
+
+        .option {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            padding: 18px;
+            margin: 10px auto;
+            background: #400040;
+            border: 5px solid #ffff00;
+            font-size: 1.45em;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #ffff00;
+        }
+
+        button, .start-btn {
+            font-family: 'Press Start 2P', cursive;
+            padding: 16px 30px;
+            margin: 10px;
+            font-size: 1.25em;
+            background: #400040;
+            color: #ffff00;
+            border: 5px solid #ffff00;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 6px 0 #ffff00;
+        }
+
+        .start-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 46, 0.98);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #question {
+            font-size: 1.95em;
+            margin: 25px 10px;
+            color: #00ffff;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.75em; }
+            .avatar { font-size: 4.2em; }
+            .option { font-size: 1.3em; padding: 16px; }
+            #question { font-size: 1.75em; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tap to Start Screen -->
+    <div id="start-screen" class="start-screen">
+        <div class="avatar" style="font-size:7em;margin-bottom:15px;">🦸‍♂️</div>
+        <h1>JAXSON'S MATHS TEST</h1>
+        <p style="font-size:1.25em;color:#00ffff;margin:20px 0 30px;">Ready to become a Maths Champion?</p>
+        <div onclick="startGameProper()" class="start-btn">TAP TO START</div>
+    </div>
+
+    <div id="menu" class="game-area" style="display:none;">
+        <div class="avatar" id="current-avatar">🦸‍♂️</div>
+        <h2>SELECT MODE</h2>
+        <button onclick="startGame('+')">+ Addition</button>
+        <button onclick="startGame('-')">- Subtraction</button>
+        <button onclick="startGame('×')">× Multiplication</button>
+        <button onclick="startGame('÷')">÷ Division</button>
+        <button onclick="startGame('mixed')">Mixed Battle</button>
+        <button onclick="showShop()">🛒 SHOP (<span id="robux-display">0</span> Robux)</button>
+    </div>
+
+    <div id="quiz" class="game-area" style="display:none;">
+        <div>Score: <span id="score">0</span> | Robux: <span id="robux-total">0</span></div>
+        <div class="avatar" id="quiz-avatar">🦸‍♂️</div>
+        <div id="question"></div>
+        <div id="options"></div>
+        <div id="feedback" style="margin:25px;font-size:1.5em; min-height:55px;"></div>
+        <button id="next" onclick="nextQuestion()" style="display:none;background:#ffff00;color:black;padding:14px 45px;font-size:1.2em;">NEXT →</button>
+    </div>
+
+    <!-- Celebration -->
+    <div id="celebration" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:1000;align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box;">
+        <h1 style="color:#ffff00;font-size:2.1em;">🎉 WELL DONE JAXSON! 🎉</h1>
+        <p style="font-size:1.5em;margin:15px;">You earned <span id="final-score" style="color:#00ff00;"></span> Robux!</p>
+        <p style="font-size:1.35em;color:#00ffff;" id="total-robux"></p>
+        <p style="font-size:1.2em;">You're a Maths Champion! 🏆</p>
+        <button onclick="restartGame()" style="background:#00ff00;color:black;padding:16px 45px;font-size:1.2em;margin-top:20px;">PLAY AGAIN</button>
+    </div>
+
+    <!-- Shop -->
+    <div id="shop" class="game-area" style="display:none;">
+        <h2>🛒 CHARACTER SHOP</h2>
+        <p>Robux: <span id="shop-robux">0</span></p>
+        <div id="shop-items" style="margin:20px 0;"></div>
+        <button onclick="hideShop()">← Back to Menu</button>
+    </div>
+
+    <!-- Audio -->
+    <audio id="voice-greeting" preload="auto"></audio>
+    <audio id="voice-complete" preload="auto"></audio>
+    <audio id="correct-snd" src="https://www.soundjay.com/buttons/beep-07.mp3"></audio>
+    <audio id="wrong-snd" src="https://www.soundjay.com/buttons/beep-08.mp3"></audio>
+
+    <script>
+        let robux = 0;
+        let currentAvatar = "🦸‍♂️";
+        let questions = [], currentQ = 0, score = 0;
+
+        const avatars = [
+            {emoji:"🦸‍♂️", name:"Hero", cost:0},
+            {emoji:"🥷", name:"Ninja", cost:250},
+            {emoji:"🚀", name:"Space Hero", cost:400},
+            {emoji:"🐱‍👤", name:"Cyber Cat", cost:550},
+            {emoji:"👑", name:"King Jaxson", cost:900}
+        ];
+
+        const greetingAudio = document.getElementById('voice-greeting');
+        const completeAudio = document.getElementById('voice-complete');
+
+        // CHANGE THESE AFTER UPLOADING YOUR MP3s TO GITHUB
+        greetingAudio.src = "Jaxsonsmathstest.mp3";
+        completeAudio.src = "welldone.mp3";
+
+        function updateRobux() {
+            document.getElementById('robux-display').textContent = robux;
+            document.getElementById('robux-total').textContent = robux;
+            document.getElementById('shop-robux').textContent = robux;
+        }
+
+        function playSound(isCorrect) {
+            const id = isCorrect ? 'correct-snd' : 'wrong-snd';
+            document.getElementById(id).play().catch(() => {});
+        }
+
+        function playGreeting() {
+            greetingAudio.currentTime = 0;
+            greetingAudio.play().catch(() => {});
+        }
+
+        function playComplete() {
+            completeAudio.currentTime = 0;
+            completeAudio.play().catch(() => {});
+        }
+
+        function startGameProper() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            playGreeting();   // Jaxsonsmathstest.mp3
+        }
+
+        function showShop() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('shop').style.display = 'block';
+            updateRobux();
+            renderShopItems();
+        }
+
+        function renderShopItems() {
+            const container = document.getElementById('shop-items');
+            container.innerHTML = '';
+            avatars.forEach(av => {
+                const btn = document.createElement('button');
+                btn.style.margin = "8px";
+                btn.style.padding = "15px";
+                btn.style.width = "90%";
+                btn.textContent = `${av.emoji} ${av.name} — ${av.cost} Robux`;
+                
+                if (currentAvatar === av.emoji) {
+                    btn.textContent += " (Equipped)";
+                    btn.disabled = true;
+                } else if (robux >= av.cost) {
+                    btn.onclick = () => buyAvatar(av);
+                } else {
+                    btn.disabled = true;
+                }
+                container.appendChild(btn);
+            });
+        }
+
+        function buyAvatar(av) {
+            robux -= av.cost;
+            currentAvatar = av.emoji;
+            document.getElementById('current-avatar').textContent = currentAvatar;
+            document.getElementById('quiz-avatar').textContent = currentAvatar;
+            updateRobux();
+            hideShop();
+        }
+
+        function hideShop() {
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        }
+
+        function startGame(mode) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('quiz-avatar').textContent = currentAvatar;
+            generateQuestions(mode);
+            currentQ = 0;
+            score = 0;
+            document.getElementById('score').textContent = score;
+            loadQuestion();
+        }
+
+        function generateQuestions(mode) {
+            questions = [];
+            for (let i = 0; i < 10; i++) {
+                let a = Math.floor(Math.random() * 12) + 5;
+                let b = Math.floor(Math.random() * 9) + 3;
+                let q, ans;
+                if (mode === 'mixed') mode = ['+','-','×'][Math.floor(Math.random()*3)];
+                if (mode === '+') { q = `${a} + ${b} = ?`; ans = a + b; }
+                else if (mode === '-') {
+                    if (a < b) [a,b] = [b,a];
+                    q = `${a} - ${b} = ?`; ans = a - b;
+                }
+                else if (mode === '×') { q = `${a} × ${b} = ?`; ans = a * b; }
+                else if (mode === '÷') {
+                    ans = b; a = b * (Math.floor(Math.random()*6) + 3);
+                    q = `${a} ÷ ${b} = ?`;
+                }
+                let opts = [ans, ans+4, ans-3, ans+6].filter(n => n > 0);
+                opts = [...new Set(opts)].slice(0,4).sort(() => Math.random()-0.5).map(String);
+                questions.push({q, ans: ans.toString(), opts});
+            }
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('question').textContent = q.q;
+            const div = document.getElementById('options');
+            div.innerHTML = '';
+           
+            q.opts.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'option';
+                btn.textContent = opt;
+                btn.onclick = () => answerQuestion(opt, btn);
+                div.appendChild(btn);
+            });
+           
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('next').style.display = 'none';
+        }
+
+        function answerQuestion(selected, btn) {
+            const correct = questions[currentQ].ans;
+            document.querySelectorAll('.option').forEach(b => b.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                score += 100;
+                robux += 100;
+                document.getElementById('feedback').innerHTML = '✅ EPIC!';
+                document.getElementById('feedback').style.color = '#0f0';
+                playSound(true);
+                btn.style.backgroundColor = '#0a0';
+            } else {
+                document.getElementById('feedback').innerHTML = `❌ Answer: ${correct}`;
+                document.getElementById('feedback').style.color = '#f00';
+                playSound(false);
+                btn.style.backgroundColor = '#a00';
+            }
+           
+            document.getElementById('score').textContent = score;
+            document.getElementById('robux-total').textContent = robux;
+            document.getElementById('next').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < 10) {
+                loadQuestion();
+            } else {
+                showCelebration();
+            }
+        }
+
+        function showCelebration() {
+            document.getElementById('quiz').style.display = 'none';
+            const celeb = document.getElementById('celebration');
+            celeb.style.display = 'flex';
+           
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('total-robux').textContent = `Total Robux: ${robux}`;
+            playComplete();   // welldone.mp3
+        }
+
+        function restartGame() {
+            document.getElementById('celebration').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
+
+        // Initialize
+        window.onload = () => {
+            updateRobux();
+        };
+    </script>
+</body>
+</html>
